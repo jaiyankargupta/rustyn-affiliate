@@ -6,6 +6,15 @@ I went with a ledger-based approach for tracking balance changes because it felt
 
 ---
 
+## Live Demo
+
+| | URL |
+|---|---|
+| **Frontend** | https://rustyn-affiliate.vercel.app/ |
+| **Backend API** | https://rustyn-affiliate.onrender.com |
+
+---
+
 ## What the system does
 
 - Affiliates see their sales, current withdrawable balance, and full transaction history
@@ -38,7 +47,11 @@ I went with a ledger-based approach for tracking balance changes because it felt
 | Role | User ID | Password |
 |------|---------|----------|
 | Affiliate | `john_doe` | `affiliate123` |
+| Affiliate | `priya_sharma` | `affiliate123` |
+| Affiliate | `ravi_kumar` | `affiliate123` |
 | Admin | `admin` | `admin123` |
+
+The system seeds 3 affiliate accounts by default so the admin's global dashboard is meaningfully different from what each individual affiliate sees. Admin sees all 9 sales across all users; each affiliate sees only their own 3.
 
 ---
 
@@ -113,6 +126,9 @@ model Sale {
   advancePaid   Boolean        @default(false)
   advancePayout AdvancePayout?
   user          User           @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status, advancePaid])   // speeds up the advance payout job filter
 }
 
 model AdvancePayout {
@@ -128,6 +144,8 @@ model Withdrawal {
   amount Float
   status String @default("pending")
   user   User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model LedgerTransaction {
@@ -137,6 +155,9 @@ model LedgerTransaction {
   type        String
   referenceId String
   user        User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([referenceId])   // speeds up audit lookups by sale or withdrawal ID
 }
 ```
 
@@ -222,9 +243,11 @@ GET /api/users
 GET /api/users/:id/dashboard
 ```
 
+Note: when the authenticated user is an admin, the dashboard endpoint returns **all** sales, withdrawals, and ledger transactions globally rather than scoping to a single user. This is what powers the admin reconciliation view.
+
 ### Dev
 ```
-POST /api/dev/reset   — wipes and re-seeds the database (admin only)
+POST /api/dev/reset   — wipes and re-seeds the database with 3 affiliates (admin only)
 ```
 
 ---
