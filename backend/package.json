@@ -14,7 +14,7 @@
     "test": "ts-node test/verify_system.ts"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
+    "@libsql/client": "^0.8.0",
     "@prisma/adapter-libsql": "^5.22.0",
     "@prisma/client": "^5.12.1",
     "@upstash/redis": "^1.38.0",
