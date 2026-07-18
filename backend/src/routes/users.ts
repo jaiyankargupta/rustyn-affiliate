@@ -16,13 +16,41 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id/dashboard', async (req, res) => {
   const { id } = req.params;
 
-  // Enforce self-access or admin-access
   if (req.user?.userId !== id && req.user?.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden: access denied' });
   }
 
   try {
     const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+      const sales = await prisma.sale.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+      const withdrawals = await prisma.withdrawal.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+      const ledgerTransactions = await prisma.ledgerTransaction.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return res.json({
+        id: user.id,
+        name: user.name,
+        withdrawableBalance: user.withdrawableBalance,
+        sales,
+        withdrawals,
+        ledgerTransactions,
+      });
+    }
+
+    const affiliate = await prisma.user.findUnique({
       where: { id },
       include: {
         sales: {
@@ -37,11 +65,7 @@ router.get('/:id/dashboard', async (req, res) => {
       },
     });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(user);
+    res.json(affiliate);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
