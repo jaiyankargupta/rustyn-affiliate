@@ -11,33 +11,29 @@ async function main() {
   const affiliatePassword = await bcrypt.hash('affiliate123', 10);
   const adminPassword = await bcrypt.hash('admin123', 10);
 
-  // Create john_doe (affiliate)
-  await prisma.user.create({
-    data: {
-      id: 'john_doe',
-      name: 'John Doe',
-      password: affiliatePassword,
-      role: 'affiliate',
-      withdrawableBalance: 0.0,
-    },
-  });
-
-  // Create admin (admin)
-  await prisma.user.create({
-    data: {
-      id: 'admin',
-      name: 'Administrator',
-      password: adminPassword,
-      role: 'admin',
-      withdrawableBalance: 0.0,
-    },
+  await prisma.user.createMany({
+    data: [
+      { id: 'john_doe',     name: 'John Doe',     password: affiliatePassword, role: 'affiliate', withdrawableBalance: 0 },
+      { id: 'priya_sharma', name: 'Priya Sharma', password: affiliatePassword, role: 'affiliate', withdrawableBalance: 0 },
+      { id: 'ravi_kumar',   name: 'Ravi Kumar',   password: affiliatePassword, role: 'affiliate', withdrawableBalance: 0 },
+      { id: 'admin',        name: 'Administrator', password: adminPassword,    role: 'admin',     withdrawableBalance: 0 },
+    ],
   });
 
   await prisma.sale.createMany({
     data: [
-      { userId: 'john_doe', brand: 'brand_1', earning: 40, status: 'pending' },
-      { userId: 'john_doe', brand: 'brand_1', earning: 40, status: 'pending' },
-      { userId: 'john_doe', brand: 'brand_1', earning: 40, status: 'pending' },
+      // john_doe sales
+      { userId: 'john_doe',     brand: 'Nike',    earning: 40,  status: 'pending' },
+      { userId: 'john_doe',     brand: 'Adidas',  earning: 80,  status: 'pending' },
+      { userId: 'john_doe',     brand: 'Puma',    earning: 60,  status: 'pending' },
+      // priya_sharma sales
+      { userId: 'priya_sharma', brand: 'Zara',    earning: 120, status: 'pending' },
+      { userId: 'priya_sharma', brand: 'H&M',     earning: 90,  status: 'pending' },
+      { userId: 'priya_sharma', brand: 'Myntra',  earning: 55,  status: 'pending' },
+      // ravi_kumar sales
+      { userId: 'ravi_kumar',   brand: 'Boat',    earning: 200, status: 'pending' },
+      { userId: 'ravi_kumar',   brand: 'JBL',     earning: 150, status: 'pending' },
+      { userId: 'ravi_kumar',   brand: 'Realme',  earning: 75,  status: 'pending' },
     ],
   });
 
